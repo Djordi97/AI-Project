@@ -5,13 +5,18 @@ class Agent:
 
     frontier = []
     closed = []
+    current = None
+    dict = {}
+    currentDirection = None
+    key = None
 
     def getSnakeHead(board):
-        global current
+        global initial
         for x in range(0,25):
             for y in range(0,25):
                 if (board[x][y] == GameObject.SNAKE_HEAD):
-                    current = (x,y)
+                    initial = (x,y)
+                    Agent.current = initial
 
     def getFood(board):
         global food
@@ -20,47 +25,88 @@ class Agent:
                 if (board[x][y] == GameObject.FOOD):
                     food = (x,y)
 
+    def validMove(x,y):
+        if (x>=0 and x<25 and y>=0 and y<25):
+            return True
+        else:
+            return False
+
+    def determineMove(direction, moveToMake, position):
+        global move
+        xy_man = (moveToMake[0] - position[0], moveToMake[1] - position[1])
+        if (direction.get_new_direction(Move.RIGHT).get_xy_manipulation() == xy_man):
+            move = Move.RIGHT
+        if (direction.get_new_direction(Move.LEFT).get_xy_manipulation() == xy_man):
+            move = Move.LEFT
+        if (direction.get_new_direction(Move.STRAIGHT).get_xy_manipulation() == xy_man):
+            move = Move.STRAIGHT
+
+    def setNewDirection():
+        Agent.currentDirection = Agent.currentDirection.get_new_direction(move)
+        Agent.current = best
+
+    def mapPreviousPosition():
+        for x in range(0,len(Agent.frontier)):
+            if not(Agent.frontier[x] in Agent.dict):
+                Agent.dict[Agent.frontier[x]] = Agent.current
+
     def extendFrontier(board):
-        if (board[current[0]+1][current[1]] == GameObject.EMPTY and (current[0]+1,current[1]) not in Agent.closed):
-            Agent.frontier.append((current[0]+1,current[1],1))
-        if(board[current[0]-1][current[1]] == GameObject.EMPTY and (current[0]-1,current[1]) not in Agent.closed):
-            Agent.frontier.append((current[0]-1,current[1],1))
-        if (board[current[0]][current[1]+1] == GameObject.EMPTY and (current[0],current[1]+1) not in Agent.closed):
-            Agent.frontier.append((current[0],current[1]+1,1))
-        if (board[current[0]][current[1]-1] == GameObject.EMPTY and (current[0],current[1]-1) not in Agent.closed):
-            Agent.frontier.append((current[0],current[1]-1,1))
-        print("current", current)
-        print(Agent.frontier)
+        x = Agent.current[0]
+        y = Agent.current[1]
 
-    def calculateCost():
-        cost = 100000;
-        best = (0,0);
+        for i in range(0,len(list_man)):
+            new_x = x+list_man[i][0]
+            new_y = y+list_man[i][1]
+            if (Agent.validMove(new_x,new_y)):
+                if ((board[new_x][new_y] == GameObject.EMPTY) or
+                    (board[new_x][new_y] ==GameObject.FOOD) and
+                    (new_x,new_y) not in (Agent.closed and Agent.frontier)):
+                    Agent.frontier.append((new_x,new_y))
 
+    def determineBestMove():
+        global best
+
+        cost = 100000
+        Agent.closed.append(Agent.current)
+        if (Agent.current in Agent.frontier):
+            Agent.frontier.remove(Agent.current)
         for x in range(len(Agent.frontier)):
-            if ((Agent.frontier[x][2] + (food[0] - Agent.frontier[x][0]) + (food[1] - Agent.frontier[x][1]))<cost):
-                cost = ((abs(food[0] - Agent.frontier[x][0])) + abs(food[1] - Agent.frontier[x][1]))
+            g = abs(initial[0] - Agent.frontier[x][0]) + abs(initial[1] - Agent.frontier[x][1])
+            h = abs(food[0] - Agent.frontier[x][0]) + abs(food[1] - Agent.frontier[x][1])
+            if ((g+h)<=cost):
+                cost = g+h
                 best = (Agent.frontier[x][0],Agent.frontier[x][1])
 
-    def get_move(self, board, score, turns_alive, turns_to_starve, direction):
+    def traceBack():
+        Agent.key = food
+        while not(Agent.dict[Agent.key] == initial):
+            Agent.key = Agent.dict[Agent.key]
 
+    def get_move(self, board, score, turns_alive, turns_to_starve, direction):
+        global list_man, initialDirection
+        initialDirection = direction
+        Agent.currentDirection = direction
         #Get the position of the snake's head and the food object
         Agent.getSnakeHead(board)
         Agent.getFood(board)
 
+        while not(food in Agent.frontier):
+            list_man = Agent.currentDirection.get_xy_moves()
         #In order to append the frontier with possible moves from the current posisiton of snake's head
-        Agent.extendFrontier(board)
-
+            Agent.extendFrontier(board)
+            Agent.mapPreviousPosition()
         #calculate the costs of possible moves according to A* Search
-        Agent.calculateCost()
+            Agent.determineBestMove()
+            Agent.determineMove(Agent.currentDirection, best, Agent.current)
+            Agent.setNewDirection()
 
-        return Move.LEFT
+        Agent.traceBack()
+        Agent.determineMove(initialDirection, Agent.key, initial)
 
+        Agent.closed = []
+        Agent.frontier = []
 
-
-
-
-
-
+        return move
 
         """This function behaves as the 'brain' of the snake. You only need to change the code in this function for
         the project. Every turn the agent needs to return a move. This move will be executed by the snake. If this
