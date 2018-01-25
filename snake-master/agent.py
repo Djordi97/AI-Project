@@ -9,6 +9,7 @@ class Agent:
     dict = {}
     currentDirection = None
     key = None
+    Agent.cost
 
     def getSnakeHead(board):
         global initial
@@ -64,24 +65,38 @@ class Agent:
         for i in range(0,len(list_man)):
             new_x = x+list_man[i][0]
             new_y = y+list_man[i][1]
-            if (Agent.validMove(new_x,new_y)):
-                if (((board[new_x][new_y] == GameObject.EMPTY) or
-                    (board[new_x][new_y] ==GameObject.FOOD)) and
-                    (new_x,new_y) not in (Agent.frontier) and
-                    (new_x, new_y) not in (Agent.closed)):
-                    Agent.frontier.append((new_x,new_y))
+            if(firstTime == True):
+                if (Agent.validMove(new_x,new_y)):
+                    print("if")
+                    if (((board[new_x][new_y] == GameObject.EMPTY) or
+                        (board[new_x][new_y] ==GameObject.FOOD)) and
+                        (new_x,new_y) not in (Agent.frontier) and
+                        (new_x, new_y) not in (Agent.closed)):
+                        Agent.frontier.append((new_x,new_y))
+            else:
+                if (Agent.validMove(new_x,new_y)):
+                    print("else")
+                    print("GameObject",board[new_x][new_y] )
+                    print("frontier", Agent.frontier)
+                    print("closed", Agent.closed)
+                    print("Food", food)
+                    print("Current state",(new_x,new_y))
+                    if(not(board[new_x][new_y] == GameObject.WALL) and
+                        (new_x,new_y) not in (Agent.frontier) and
+                        (new_x, new_y) not in (Agent.closed)):
+                        Agent.frontier.append((new_x,new_y))
+
 
     def determineBestMove():
         global best
-        cost = 100000
         Agent.closed.append(Agent.current)
         if (Agent.current in Agent.frontier):
             Agent.frontier.remove(Agent.current)
         for x in range(len(Agent.frontier)):
             g = abs(initial[0] - Agent.frontier[x][0]) + abs(initial[1] - Agent.frontier[x][1])
             h = abs(food[0] - Agent.frontier[x][0]) + abs(food[1] - Agent.frontier[x][1])
-            if ((g+h)<cost):
-                cost = g+h
+            if ((g+h)<Agent.cost):
+                Agent.cost = g+h
                 best = (Agent.frontier[x][0],Agent.frontier[x][1])
 
     def traceBack():
@@ -90,32 +105,37 @@ class Agent:
             Agent.key = Agent.dict[Agent.key]
 
     def get_move(self, board, score, turns_alive, turns_to_starve, direction):
-        global list_man, initialDirection
+        global list_man, initialDirection, firstTime
+        firstTime = True
         initialDirection = direction
         Agent.currentDirection = direction
         #Get the position of the snake's head and the food object
+        Agent.frontier = []
+        Agent.closed = []
+        Agent.dict = {}
+
         Agent.getSnakeHead(board)
         Agent.getFood(board)
-
-        print("Start")
 
         while not(food in Agent.frontier):
             list_man = Agent.currentDirection.get_xy_moves()
         #In order to append the frontier with possible moves from the current posisiton of snake's head
             Agent.extendFrontier(board)
+            if (len(Agent.frontier) ==  0 and len(Agent.closed) >1):
+                Agent.determineMove(initialDirection, Agent.closed[1] , initial)
+                return move
+            elif (len(Agent.frontier) ==  0 and len(Agent.closed) < 1):
+                return "Snakey died :("
+            firstTime = False
             Agent.mapPreviousPosition()
         #calculate the costs of possible moves according to A* Search
             Agent.determineBestMove()
             Agent.determineMove(Agent.currentDirection, best, Agent.current)
             Agent.setNewDirection()
 
+
         Agent.traceBack()
         Agent.determineMove(initialDirection, Agent.key, initial)
-        Agent.frontier = []
-        Agent.closed = []
-        Agent.dict = {}
-        print("Move", move)
-        print("Score:", score)
         return move
 
         """This function behaves as the 'brain' of the snake. You only need to change the code in this function for
