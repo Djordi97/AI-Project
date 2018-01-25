@@ -91,6 +91,8 @@ class Agent:
 
     def get_move(self, board, score, turns_alive, turns_to_starve, direction):
         global list_man, initialDirection
+        print("start")
+        print("score", score)
         initialDirection = direction
         Agent.currentDirection = direction
         #Get the position of the snake's head and the food object
@@ -114,9 +116,6 @@ class Agent:
         Agent.frontier = []
         Agent.closed = []
         Agent.dict = {}
-        print("Move", move)
-        print("Score:", score)
-        return move
 
         """This function behaves as the 'brain' of the snake. You only need to change the code in this function for
         the project. Every turn the agent needs to return a move. This move will be executed by the snake. If this
