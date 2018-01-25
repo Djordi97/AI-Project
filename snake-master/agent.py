@@ -7,6 +7,7 @@ class Agent:
     closed = []
     current = (0,0)
     dict = {}
+    costDict = {}
     currentDirection = None
     key = None
 
@@ -31,6 +32,13 @@ class Agent:
                 shortdist = abs(foodlist[x][0]-initial[0])+abs(foodlist[x][1]-initial[1])
                 food = (foodlist[x][0],foodlist[x][1])
 
+    def findBodyParts(board):
+        global body_parts
+        body_parts = []
+        for x in range(0,25):
+            for y in range(0,25):
+                if (board[x][y] == GameObject.SNAKE_BODY):
+                    body_parts.append((x,y))
 
     def validMove(x,y):
         if (x>=0 and x<25 and y>=0 and y<25):
@@ -57,6 +65,20 @@ class Agent:
             if not(Agent.frontier[x] in Agent.dict):
                 Agent.dict[Agent.frontier[x]] = Agent.current
 
+    def scanArea(tuple,board):
+        global foodClose, bodyClose
+        foodClose = False
+        bodyClose = False
+        x = tuple[0]
+        y = tuple[1]
+        for i in range(0, len(list_man)):
+            new_x = x+list_man[i][0]
+            new_y = y+list_man[i][1]
+            if((new_x,new_y) in body_parts):
+                bodyClose = True
+            if((new_x,new_y) in foodlist):
+                foodClose = True
+
     def extendFrontier(board):
         x = Agent.current[0]
         y = Agent.current[1]
@@ -74,7 +96,7 @@ class Agent:
                         if(not (board[new_x][new_y] == GameObject.WALL)):
                             Agent.frontier.append((new_x,new_y))
 
-    def determineBestMove():
+    def determineBestMove(board,score):
         global best
         cost = 100000
         Agent.closed.append(Agent.current)
@@ -82,6 +104,11 @@ class Agent:
             Agent.frontier.remove(Agent.current)
         for x in range(len(Agent.frontier)):
             g = abs(initial[0] - Agent.frontier[x][0]) + abs(initial[1] - Agent.frontier[x][1])
+            Agent.scanArea((Agent.frontier[x][0],Agent.frontier[x][1]),board)
+            if(bodyClose):
+                g = g - score
+            if(foodClose):
+                g = g - score*2
             h = abs(food[0] - Agent.frontier[x][0]) + abs(food[1] - Agent.frontier[x][1])
             if ((g+h)<cost):
                 cost = g+h
@@ -104,12 +131,14 @@ class Agent:
 
         Agent.getSnakeHead(board)
         Agent.getFood(board)
+        Agent.findBodyParts(board)
 
         while not(food in Agent.frontier):
             list_man = Agent.currentDirection.get_xy_moves()
         #In order to append the frontier with possible moves from the current posisiton of snake's head
             Agent.extendFrontier(board)
             if (len(Agent.frontier) ==  0 and len(Agent.closed) >1):
+                print("random")
                 Agent.determineMove(initialDirection, Agent.closed[1] , initial)
                 return move
             elif (len(Agent.frontier) ==  0 and len(Agent.closed) < 1):
@@ -117,7 +146,7 @@ class Agent:
             firstTime = False
             Agent.mapPreviousPosition()
         #calculate the costs of possible moves according to A* Search
-            Agent.determineBestMove()
+            Agent.determineBestMove(board,score)
             Agent.determineMove(Agent.currentDirection, best, Agent.current)
             Agent.setNewDirection()
 
