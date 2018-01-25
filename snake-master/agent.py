@@ -1,5 +1,6 @@
 from gameobjects import GameObject
 from move import Move
+from math import *
 
 class Agent:
 
@@ -99,10 +100,13 @@ class Agent:
     def determineBestMove(board,score):
         global best
         cost = 100000
+        changes = 0
         Agent.closed.append(Agent.current)
         if (Agent.current in Agent.frontier):
             Agent.frontier.remove(Agent.current)
         for x in range(len(Agent.frontier)):
+            #g = sqrt(pow((initial[0] - Agent.frontier[x][0]),2) + pow((initial[1] - Agent.frontier[x][1]),2))
+            #h = sqrt(pow((food[0] - Agent.frontier[x][0]),2) + pow((food[1] - Agent.frontier[x][1]),2))
             g = abs(initial[0] - Agent.frontier[x][0]) + abs(initial[1] - Agent.frontier[x][1])
             Agent.scanArea((Agent.frontier[x][0],Agent.frontier[x][1]),board)
             if(bodyClose):
@@ -110,14 +114,48 @@ class Agent:
             if(foodClose):
                 g = g - score*2
             h = abs(food[0] - Agent.frontier[x][0]) + abs(food[1] - Agent.frontier[x][1])
-            if ((g+h)<cost):
+            if ((g+h) < cost):
                 cost = g+h
                 best = (Agent.frontier[x][0],Agent.frontier[x][1])
+            elif((g+h) == cost and board[best[0]][best[1]] == GameObject.SNAKE_BODY):
+                best = (Agent.frontier[x][0],Agent.frontier[x][1])
+
 
     def traceBack():
         Agent.key = food
         while not(Agent.dict[Agent.key] == initial):
             Agent.key = Agent.dict[Agent.key]
+
+    def randomMove(board):
+        for i in range(0, len(list_man)):
+            random_x = Agent.current[0] + list_man[i][0]
+            random_y = Agent.current[1] + list_man[i][1]
+            if(Agent.validMove(random_x,random_y)):
+                if(board[random_x][random_y] == GameObject.FOOD):
+                    Agent.determineMove(Agent.currentDirection,(random_x,random_y),Agent.current)
+                    return move
+
+        nextlist = []
+        for i in range(0, len(list_man)):
+            random_list = []
+            previousDirection = Agent.currentDirection
+            random_x = Agent.current[0] + list_man[i][0]
+            random_y = Agent.current[1] + list_man[i][1]
+            if(Agent.validMove(random_x,random_y)):
+                if(board[random_x][random_y] == GameObject.EMPTY):
+                    nextlist.append((random_x,random_y))
+                    Agent.determineMove(Agent.currentDirection, (random_x,random_y), Agent.current)
+                    Agent.setNewDirection()
+                    random_list = Agent.currentDirection.get_xy_moves()
+                    for j in range(0, len(random_list)):
+                        second_random_x = random_x + random_list[i][0]
+                        second_random_y = random_y + random_list[i][1]
+                        if(Agent.validMove(second_random_x, second_random_y)):
+                            if(board[second_random_x][second_random_y] == GameObject.EMPTY):
+                                Agent.determineMove(Agent.currentDirection,(random_x,random_y),Agent.current)
+                                return move
+                        currentDirection = previousDirection
+
 
     def get_move(self, board, score, turns_alive, turns_to_starve, direction):
         global list_man, initialDirection, firstTime
@@ -133,13 +171,13 @@ class Agent:
         Agent.getFood(board)
         Agent.findBodyParts(board)
 
-        while not(food in Agent.frontier):
+        while not(food == Agent.current):
             list_man = Agent.currentDirection.get_xy_moves()
         #In order to append the frontier with possible moves from the current posisiton of snake's head
             Agent.extendFrontier(board)
             if (len(Agent.frontier) ==  0 and len(Agent.closed) >1):
-                print("random")
-                Agent.determineMove(initialDirection, Agent.closed[1] , initial)
+                print("in")
+                Agent.randomMove(board)
                 return move
             elif (len(Agent.frontier) ==  0 and len(Agent.closed) < 1):
                 return "Snakey died :("
@@ -150,10 +188,12 @@ class Agent:
             Agent.determineMove(Agent.currentDirection, best, Agent.current)
             Agent.setNewDirection()
 
+        if(food == Agent.current):
+            Agent.traceBack()
+            Agent.determineMove(initialDirection, Agent.key, initial)
+            return move
 
-        Agent.traceBack()
-        Agent.determineMove(initialDirection, Agent.key, initial)
-        return move
+
 
         """This function behaves as the 'brain' of the snake. You only need to change the code in this function for
         the project. Every turn the agent needs to return a move. This move will be executed by the snake. If this
