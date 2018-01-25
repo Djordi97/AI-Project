@@ -36,9 +36,9 @@ class Agent:
         xy_man = (moveToMake[0] - position[0], moveToMake[1] - position[1])
         if (direction.get_new_direction(Move.RIGHT).get_xy_manipulation() == xy_man):
             move = Move.RIGHT
-        if (direction.get_new_direction(Move.LEFT).get_xy_manipulation() == xy_man):
+        if else (direction.get_new_direction(Move.LEFT).get_xy_manipulation() == xy_man):
             move = Move.LEFT
-        if (direction.get_new_direction(Move.STRAIGHT).get_xy_manipulation() == xy_man):
+        if else (direction.get_new_direction(Move.STRAIGHT).get_xy_manipulation() == xy_man):
             move = Move.STRAIGHT
 
     def setNewDirection():
@@ -58,9 +58,10 @@ class Agent:
             new_x = x+list_man[i][0]
             new_y = y+list_man[i][1]
             if (Agent.validMove(new_x,new_y)):
-                if ((board[new_x][new_y] == GameObject.EMPTY) or
-                    (board[new_x][new_y] ==GameObject.FOOD) and
-                    (new_x,new_y) not in (Agent.closed and Agent.frontier)):
+                if (((board[new_x][new_y] == GameObject.EMPTY) or
+                    (board[new_x][new_y] ==GameObject.FOOD)) and
+                    (new_x,new_y) not in (Agent.frontier) and
+                    (new_x, new_y) not in (Agent.closed)):
                     Agent.frontier.append((new_x,new_y))
 
     def determineBestMove():
@@ -74,7 +75,7 @@ class Agent:
         for x in range(len(Agent.frontier)):
             g = abs(initial[0] - Agent.frontier[x][0]) + abs(initial[1] - Agent.frontier[x][1])
             h = abs(food[0] - Agent.frontier[x][0]) + abs(food[1] - Agent.frontier[x][1])
-            if ((g+h)<=cost):
+            if ((g+h)<cost):
                 cost = g+h
                 best = (Agent.frontier[x][0],Agent.frontier[x][1])
 
