@@ -9,7 +9,6 @@ class Agent:
     dict = {}
     currentDirection = None
     key = None
-    Agent.cost
 
     def getSnakeHead(board):
         global initial
@@ -89,14 +88,15 @@ class Agent:
 
     def determineBestMove():
         global best
+        cost = 100000
         Agent.closed.append(Agent.current)
         if (Agent.current in Agent.frontier):
             Agent.frontier.remove(Agent.current)
         for x in range(len(Agent.frontier)):
             g = abs(initial[0] - Agent.frontier[x][0]) + abs(initial[1] - Agent.frontier[x][1])
             h = abs(food[0] - Agent.frontier[x][0]) + abs(food[1] - Agent.frontier[x][1])
-            if ((g+h)<Agent.cost):
-                Agent.cost = g+h
+            if ((g+h)<cost):
+                cost = g+h
                 best = (Agent.frontier[x][0],Agent.frontier[x][1])
 
     def traceBack():
