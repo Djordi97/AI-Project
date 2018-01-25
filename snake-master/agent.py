@@ -19,11 +19,18 @@ class Agent:
                     Agent.current = initial
 
     def getFood(board):
-        global food
+        global foodlist, food
+        foodlist = []
         for x in range(0,25):
             for y in range(0,25):
                 if (board[x][y] == GameObject.FOOD):
-                    food = (x,y)
+                    foodlist.append((x,y))
+        shortdist = 10000
+        for x in range(0,len(foodlist)):
+            if(abs(foodlist[x][0]-initial[0])+abs(foodlist[x][1]-initial[1])<shortdist):
+                shortdist = abs(foodlist[x][0]-initial[0])+abs(foodlist[x][1]-initial[1])
+                food = (foodlist[x][0],foodlist[x][1])
+
 
     def validMove(x,y):
         if (x>=0 and x<25 and y>=0 and y<25):
@@ -90,6 +97,8 @@ class Agent:
         Agent.getSnakeHead(board)
         Agent.getFood(board)
 
+        print("Start")
+
         while not(food in Agent.frontier):
             list_man = Agent.currentDirection.get_xy_moves()
         #In order to append the frontier with possible moves from the current posisiton of snake's head
@@ -99,19 +108,15 @@ class Agent:
             Agent.determineBestMove()
             Agent.determineMove(Agent.currentDirection, best, Agent.current)
             Agent.setNewDirection()
+
         Agent.traceBack()
         Agent.determineMove(initialDirection, Agent.key, initial)
         Agent.frontier = []
         Agent.closed = []
         Agent.dict = {}
+        print("Move", move)
+        print("Score:", score)
         return move
-
-
-
-
-
-
-
 
         """This function behaves as the 'brain' of the snake. You only need to change the code in this function for
         the project. Every turn the agent needs to return a move. This move will be executed by the snake. If this
@@ -154,4 +159,5 @@ class Agent:
         it will be called for a fresh snake. Use this function to clean up variables specific to the life of a single
         snake or to host a funeral.
         """
+
         pass
