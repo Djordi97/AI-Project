@@ -5,8 +5,8 @@ from board import Board
 root = None
 canvas = None
 scale = None
-canvas_width = 800
-canvas_height = 800
+canvas_width = 700
+canvas_height = 700
 
 tics_per_second = 4
 

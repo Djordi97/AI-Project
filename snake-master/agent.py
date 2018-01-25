@@ -60,31 +60,19 @@ class Agent:
     def extendFrontier(board):
         x = Agent.current[0]
         y = Agent.current[1]
-
-        for i in range(0,len(list_man)):
+        for i in range(0, len(list_man)):
             new_x = x+list_man[i][0]
             new_y = y+list_man[i][1]
-            if(firstTime == True):
-                if (Agent.validMove(new_x,new_y)):
-                    print("if")
-                    if (((board[new_x][new_y] == GameObject.EMPTY) or
-                        (board[new_x][new_y] ==GameObject.FOOD)) and
-                        (new_x,new_y) not in (Agent.frontier) and
-                        (new_x, new_y) not in (Agent.closed)):
-                        Agent.frontier.append((new_x,new_y))
-            else:
-                if (Agent.validMove(new_x,new_y)):
-                    print("else")
-                    print("GameObject",board[new_x][new_y] )
-                    print("frontier", Agent.frontier)
-                    print("closed", Agent.closed)
-                    print("Food", food)
-                    print("Current state",(new_x,new_y))
-                    if(not(board[new_x][new_y] == GameObject.WALL) and
-                        (new_x,new_y) not in (Agent.frontier) and
-                        (new_x, new_y) not in (Agent.closed)):
-                        Agent.frontier.append((new_x,new_y))
-
+            if(Agent.validMove(new_x, new_y)):
+                if((new_x, new_y) not in Agent.frontier and
+                   (new_x, new_y) not in Agent.closed):
+                   if(firstTime == True):
+                       if((board[new_x][new_y] == GameObject.EMPTY) or
+                           (board[new_x][new_y] == GameObject.FOOD)):
+                           Agent.frontier.append((new_x,new_y))
+                   elif(firstTime == False):
+                        if(not (board[new_x][new_y] == GameObject.WALL)):
+                            Agent.frontier.append((new_x,new_y))
 
     def determineBestMove():
         global best
