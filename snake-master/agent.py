@@ -5,7 +5,7 @@ class Agent:
 
     frontier = []
     closed = []
-    current = None
+    current = (0,0)
     dict = {}
     currentDirection = None
     key = None
@@ -65,9 +65,10 @@ class Agent:
 
     def determineBestMove():
         global best
-
         cost = 100000
         Agent.closed.append(Agent.current)
+        print(Agent.frontier)
+        print(Agent.closed)
         if (Agent.current in Agent.frontier):
             Agent.frontier.remove(Agent.current)
         for x in range(len(Agent.frontier)):
@@ -79,11 +80,14 @@ class Agent:
 
     def traceBack():
         Agent.key = food
+        print(Agent.key)
+        print("key",Agent.dict[Agent.key])
         while not(Agent.dict[Agent.key] == initial):
             Agent.key = Agent.dict[Agent.key]
 
     def get_move(self, board, score, turns_alive, turns_to_starve, direction):
         global list_man, initialDirection
+        print("The frontier is now:", Agent.frontier)
         initialDirection = direction
         Agent.currentDirection = direction
         #Get the position of the snake's head and the food object
@@ -91,22 +95,38 @@ class Agent:
         Agent.getFood(board)
 
         while not(food in Agent.frontier):
+            print("1")
             list_man = Agent.currentDirection.get_xy_moves()
         #In order to append the frontier with possible moves from the current posisiton of snake's head
+            print("2")
             Agent.extendFrontier(board)
+            print("3")
             Agent.mapPreviousPosition()
         #calculate the costs of possible moves according to A* Search
+            print("4")
             Agent.determineBestMove()
+            print("5")
             Agent.determineMove(Agent.currentDirection, best, Agent.current)
+            print("6")
             Agent.setNewDirection()
-
+        print("7")
         Agent.traceBack()
+
+        print(Agent.key)
+        print("finished!")
+        print(direction)
         Agent.determineMove(initialDirection, Agent.key, initial)
-
-        Agent.closed = []
         Agent.frontier = []
-
+        Agent.closed = []
+        print(move)
         return move
+
+
+
+
+
+
+
 
         """This function behaves as the 'brain' of the snake. You only need to change the code in this function for
         the project. Every turn the agent needs to return a move. This move will be executed by the snake. If this
