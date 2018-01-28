@@ -89,10 +89,11 @@ class Agent:
             if(Agent.validMove(new_x, new_y)):
                 if((new_x, new_y) not in Agent.frontier and
                    (new_x, new_y) not in Agent.closed):
+                   if((board[new_x][new_y] == GameObject.EMPTY) or
+                             (board[new_x][new_y] == GameObject.FOOD)):
+                             Agent.frontier.append((new_x,new_y))
+
                  #  if(firstTime == True):
-                 if((board[new_x][new_y] == GameObject.EMPTY) or
-                           (board[new_x][new_y] == GameObject.FOOD)):
-                           Agent.frontier.append((new_x,new_y))
                 #   elif(firstTime == False):
                         #if(not (board[new_x][new_y] == GameObject.WALL)):
                             #Agent.frontier.append((new_x,new_y))
@@ -106,13 +107,13 @@ class Agent:
             Agent.frontier.remove(Agent.current)
         for x in range(len(Agent.frontier)):
             #g = sqrt(pow((initial[0] - Agent.frontier[x][0]),2) + pow((initial[1] - Agent.frontier[x][1]),2))
-            #h = sqrt(pow((food[0] - Agent.frontier[x][0]),2) + pow((food[1] - Agent.frontier[x][1]),2))
             g = abs(initial[0] - Agent.frontier[x][0]) + abs(initial[1] - Agent.frontier[x][1])
             Agent.scanArea((Agent.frontier[x][0],Agent.frontier[x][1]),board)
             if(bodyClose):
-                g = g - score*0.2
+                g = g - score*0.1
             if(foodClose):
                 g = g - score*1.5
+            #h = sqrt(pow((food[0] - Agent.frontier[x][0]),2) + pow((food[1] - Agent.frontier[x][1]),2))
             h = abs(food[0] - Agent.frontier[x][0]) + abs(food[1] - Agent.frontier[x][1])
             if ((g+h) < cost):
                 cost = g+h
@@ -127,45 +128,29 @@ class Agent:
             Agent.key = Agent.dict[Agent.key]
 
     def randomMove(board):
+        x = initial[0]
+        y = initial[1]
+        best = (0,0)
         for i in range(0, len(list_man)):
-            random_x = Agent.current[0] + list_man[i][0]
-            random_y = Agent.current[1] + list_man[i][1]
-            if(Agent.validMove(random_x,random_y)):
-                #if one of the possible moves leads to food => return that move
-                if(board[random_x][random_y] == GameObject.FOOD):
-                    Agent.determineMove(Agent.currentDirection,(random_x,random_y),Agent.current)
-                    return move
-
-        for i in range(0, len(list_man)):
-            random_list = []
-            previousDirection = Agent.currentDirection
-            random_x = Agent.current[0] + list_man[i][0]
-            random_y = Agent.current[1] + list_man[i][1]
-            if(Agent.validMove(random_x,random_y)):
-                #check if the next places are empty
-                if(board[random_x][random_y] == GameObject.EMPTY):
-                    #get the possible move for the first next empty place
-                    Agent.determineMove(Agent.currentDirection,(random_x,random_y), Agent.current)
-                    Agent.setNewDirection()
-                    random_list = Agent.currentDirection.get_xy_moves()
-                    for j in range(0, len(random_list)):
-                        second_random_x = random_x + random_list[i][0]
-                        second_random_y = random_y + random_list[i][1]
-                        if(Agent.validMove(second_random_x, second_random_y)):
-                            #if one of the next-next places is empty => return move
-                            if(board[second_random_x][second_random_y] == GameObject.EMPTY):
-                                Agent.determineMove(Agent.currentDirection,(random_x,random_y),Agent.current)
-                                return move
-                    currentDirection = previousDirection
-
-        for i in range(0, len(list_man)):
-            random_x = Agent.current[0] + list_man[i][0]
-            random_y = Agent.current[1] + list_man[i][1]
-            if(Agent.validMove(random_x,random_y)):
-                #if one of the possible moves leads to food => return that move
-                if(board[random_x][random_y] == GameObject.EMPTY):
-                    Agent.determineMove(Agent.currentDirection,(random_x,random_y),Agent.current)
-                    return move
+            new_x = x+list_man[i][0]
+            new_y = y+list_man[i][1]
+            if(Agent.validMove(new_x, new_y)):
+                print("GameObject", board[new_x][new_y])
+                if(board[new_x][new_y] == GameObject.FOOD):
+                    print("food")
+                    Agent.determineMove(initialDirection, (new_x, new_y), initial)
+                    break
+                elif(board[new_x][new_y] == GameObject.EMPTY):
+                    Agent.scanArea((new_x, new_y),board)
+                    if(bodyClose or foodClose):
+                        Agent.determineMove(initialDirection, (new_x, new_y), initial)
+                        print("foodclose/bodyclose")
+                        break
+                    else:
+                        best = (new_x,new_y)
+        if not(best == (0,0)):
+            print("free")
+            Agent.determineMove(initialDirection, best, initial)
 
 
     def get_move(self, board, score, turns_alive, turns_to_starve, direction):
@@ -184,16 +169,18 @@ class Agent:
 
         while not(food == Agent.current):
             list_man = Agent.currentDirection.get_xy_moves()
-        #In order to append the frontier with possible moves from the current posisiton of snake's head
-            Agent.extendFrontier(board)
-            print("a*")
-            if (len(Agent.frontier) ==  0 and len(Agent.closed) >1):
+            if (len(Agent.frontier) ==  0 and firstTime == False and len(Agent.closed) > 1):
+                print("frontier", len(Agent.frontier), "closed", len(Agent.closed) )
                 print("in")
                 Agent.randomMove(board)
                 return move
-            elif (len(Agent.frontier) ==  0 and len(Agent.closed) < 1):
+            elif (len(Agent.frontier) ==  0 and firstTime == False and len(Agent.closed) < 1):
                 return "Snakey died :("
                 print("dead")
+        #In order to append the frontier with possible moves from the current posisiton of snake's head
+
+            Agent.extendFrontier(board)
+            print("a*")
             firstTime = False
             Agent.mapPreviousPosition()
         #calculate the costs of possible moves according to A* Search
