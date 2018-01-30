@@ -1,11 +1,13 @@
 from gameobjects import GameObject
 from move import Move
 from math import *
+import time
 
 class Agent:
 
-    board_width = 75
-    board_height = 75
+    board_width = 25
+    board_height = 25
+    timerStarted = False
     frontier = None
     closed = None
     current = None
@@ -13,6 +15,7 @@ class Agent:
     costDict = None
     currentDirection = None
     key = None
+    timeList = []
 
     def getSnakeHead(board):
         global initial
@@ -154,7 +157,18 @@ class Agent:
 
 
     def get_move(self, board, score, turns_alive, turns_to_starve, direction):
-        global list_man, initialDirection, firstTime
+        global list_man, initialDirection, firstTime, t0
+        if(len(Agent.timeList)==30):
+            total_time = 0
+            for x in range(0,len(Agent.timeList)):
+                total_time = total_time + Agent.timeList[x]
+            avg = total_time / len(Agent.timeList)
+            Agent.timeList = []
+            print("average over", len(Agent.timeList), "trials with board size", Agent.board_height, "is:", avg)
+
+        if not(Agent.timerStarted):
+            t0 = time.time()
+            Agent.timerStarted = True
         firstTime = True
         initialDirection = direction
         Agent.currentDirection = direction
@@ -231,6 +245,10 @@ class Agent:
         """
 
     def on_die(self):
+        t1 = time.time()
+        print("time difference", t1-t0)
+        Agent.timeList.append(t1-t0)
+        Agent.timerStarted = False
         """This function will be called whenever the snake dies. After its dead the snake will be reincarnated into a
         new snake and its life will start over. This means that the next time the get_move function is called,
         it will be called for a fresh snake. Use this function to clean up variables specific to the life of a single

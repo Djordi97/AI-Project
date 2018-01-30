@@ -3,6 +3,7 @@ from random import randint
 from agent import Agent
 from gameobjects import GameObject
 from move import Direction, Move
+from time import *
 
 
 class Snake:
