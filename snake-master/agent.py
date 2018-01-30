@@ -159,8 +159,8 @@ class Agent:
             for x in range(0,len(Agent.timeList)):
                 total_time = total_time + Agent.timeList[x]
             avg = total_time / len(Agent.timeList)
-            Agent.timeList = []
             print("average over", len(Agent.timeList), "trials with board size", Agent.board_height, "is:", avg)
+            Agent.timeList = []
 
         if not(Agent.timerStarted):
             t0 = time.time()
