@@ -187,7 +187,7 @@ class Agent:
             if (len(Agent.frontier) ==  0 and firstTime == False and len(Agent.closed) > 1):
                 Agent.randomMove(board)
                 return move
-            elif (len(Agent.frontier) ==  0 and firstTime == False and len(Agent.closed) < 1):
+            elif (len(Agent.frontier) ==  0 and firstTime == False and len(Agent.closed) =< 1):
                 return "Snakey died :("
         #In order to append the frontier with possible moves from the current posisiton of snake's head
 
