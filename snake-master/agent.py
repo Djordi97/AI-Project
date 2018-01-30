@@ -5,8 +5,8 @@ import time
 
 class Agent:
 
-    board_width = 25
-    board_height = 25
+    board_width = 40
+    board_height = 40
     timerStarted = False
     frontier = None
     closed = None
@@ -125,10 +125,15 @@ class Agent:
                 best = (Agent.frontier[x][0],Agent.frontier[x][1])
 
 
-    def traceBack():
+    def traceBack(board):
         Agent.key = food
-        while not(Agent.dict[Agent.key] == initial):
-            Agent.key = Agent.dict[Agent.key]
+        if(Agent.key in Agent.dict):
+            while not(Agent.dict[Agent.key] == initial):
+                Agent.key = Agent.dict[Agent.key]
+                if not(Agent.key in Agent.dict):
+                    Agent.randomMove(board)
+                    return move
+
 
     def randomMove(board):
         x = initial[0]
@@ -195,7 +200,7 @@ class Agent:
             Agent.setNewDirection()
 
         if(food == Agent.current):
-            Agent.traceBack()
+            Agent.traceBack(board)
             Agent.determineMove(initialDirection, Agent.key, initial)
             return move
 
