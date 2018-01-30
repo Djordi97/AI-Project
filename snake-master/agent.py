@@ -135,21 +135,17 @@ class Agent:
             new_x = x+list_man[i][0]
             new_y = y+list_man[i][1]
             if(Agent.validMove(new_x, new_y)):
-                #print("GameObject", board[new_x][new_y])
                 if(board[new_x][new_y] == GameObject.FOOD):
-                    #print("food")
                     Agent.determineMove(initialDirection, (new_x, new_y), initial)
                     break
                 elif(board[new_x][new_y] == GameObject.EMPTY):
                     Agent.scanArea((new_x, new_y),board)
                     if(bodyClose or foodClose):
                         Agent.determineMove(initialDirection, (new_x, new_y), initial)
-                        #print("foodclose/bodyclose")
                         break
                     else:
                         best = (new_x,new_y)
         if not(best == (0,0)):
-            #print("free")
             Agent.determineMove(initialDirection, best, initial)
 
 
@@ -170,17 +166,13 @@ class Agent:
         while not(food == Agent.current):
             list_man = Agent.currentDirection.get_xy_moves()
             if (len(Agent.frontier) ==  0 and firstTime == False and len(Agent.closed) > 1):
-                #print("frontier", len(Agent.frontier), "closed", len(Agent.closed) )
-                #print("in")
                 Agent.randomMove(board)
                 return move
             elif (len(Agent.frontier) ==  0 and firstTime == False and len(Agent.closed) < 1):
                 return "Snakey died :("
-                #print("dead")
         #In order to append the frontier with possible moves from the current posisiton of snake's head
 
             Agent.extendFrontier(board)
-            #print("a*")
             firstTime = False
             Agent.mapPreviousPosition()
         #calculate the costs of possible moves according to A* Search
